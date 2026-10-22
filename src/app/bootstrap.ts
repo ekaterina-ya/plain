@@ -136,6 +136,7 @@ export async function bootstrap(): Promise<void> {
       store.setRailWidth(session.rail.width);
       store.setRailCollapsed(session.rail.collapsed);
       store.setSplitRatio(session.split);
+      store.setSplitRich(session.splitRich);
     }
 
     const open = async () => {

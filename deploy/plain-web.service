@@ -1,0 +1,38 @@
+# Plain Web on the server: /etc/systemd/system/plain-web.service.
+# Listens on this machine only, behind Caddy (deploy/caddy.txt); put your own
+# name in --host. Caddy in Docker reaches the host on the bridge instead:
+# --listen 172.17.0.1:8642 (the bridge's gateway) and After=docker.service.
+[Unit]
+Description=Plain Web
+After=network.target
+StartLimitIntervalSec=0
+
+[Service]
+User=plain
+Group=plain
+ExecStart=/opt/plain-web/current/plain-web --library /srv/notes --data /var/lib/plain-web --listen 127.0.0.1:8642 --host notes.example.com --static /opt/plain-web/current/web
+Restart=on-failure
+RestartSec=5
+UMask=0077
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/srv/notes /var/lib/plain-web
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectKernelLogs=yes
+ProtectControlGroups=yes
+ProtectClock=yes
+ProtectHostname=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX
+RestrictNamespaces=yes
+RestrictSUIDSGID=yes
+MemoryDenyWriteExecute=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

@@ -5,7 +5,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import { openLibrary, openPaths, revealInExplorer } from "../app/commands";
-import { pathKey } from "../app/paths";
+import { inWeb } from "../app/env";
+import { downloadNote, pickAndImport } from "../app/import";
+import { shareNote } from "../app/share";
+import { dirname, pathKey } from "../app/paths";
 import { activeDoc, useStore, type TreeNode } from "../app/store";
 import { focusEditor } from "../editor";
 import { askDelete, createFolder, newFile, renameEntry, suggestedName } from "../library/ops";
@@ -73,7 +76,17 @@ function NameField({
 function Menu({ children }: { children: React.ReactNode }) {
   return (
     <ContextMenu.Portal>
-      <ContextMenu.Content className="menu" collisionPadding={8}>
+      <ContextMenu.Content
+        className="menu"
+        collisionPadding={8}
+        // `rename` and `new folder` put the focus in their field; handing it
+        // back to the row as the menu closes (late, in WebKit) would blur the
+        // field, and a blurred field cancels itself.
+        onCloseAutoFocus={(event) => {
+          const { treeRenaming, treeDraft } = useStore.getState();
+          if (treeRenaming || treeDraft) event.preventDefault();
+        }}
+      >
         {children}
       </ContextMenu.Content>
     </ContextMenu.Portal>
@@ -202,9 +215,17 @@ export function FileTree() {
       <ContextMenu.Item className="menu-item" onSelect={() => startDraft(libraryPath)}>
         new folder
       </ContextMenu.Item>
-      <ContextMenu.Item className="menu-item" onSelect={() => void revealInExplorer(libraryPath)}>
-        reveal in explorer
-      </ContextMenu.Item>
+      {inWeb && (
+        <ContextMenu.Item className="menu-item" onSelect={() => pickAndImport(libraryPath)}>
+          import…
+        </ContextMenu.Item>
+      )}
+      {/* Plain Web: the folder is on the server, not in this device's Finder. */}
+      {!inWeb && (
+        <ContextMenu.Item className="menu-item" onSelect={() => void revealInExplorer(libraryPath)}>
+          reveal in explorer
+        </ContextMenu.Item>
+      )}
     </Menu>
   );
 
@@ -302,12 +323,19 @@ export function FileTree() {
                     <ContextMenu.Item className="menu-item" onSelect={() => startDraft(node.path)}>
                       new folder
                     </ContextMenu.Item>
-                    <ContextMenu.Item
-                      className="menu-item"
-                      onSelect={() => void revealInExplorer(node.path)}
-                    >
-                      reveal in explorer
-                    </ContextMenu.Item>
+                    {inWeb && (
+                      <ContextMenu.Item className="menu-item" onSelect={() => pickAndImport(node.path)}>
+                        import…
+                      </ContextMenu.Item>
+                    )}
+                    {!inWeb && (
+                      <ContextMenu.Item
+                        className="menu-item"
+                        onSelect={() => void revealInExplorer(node.path)}
+                      >
+                        reveal in explorer
+                      </ContextMenu.Item>
+                    )}
                     <ContextMenu.Item className="menu-item" onSelect={() => askDelete(node)}>
                       delete
                     </ContextMenu.Item>
@@ -317,18 +345,43 @@ export function FileTree() {
                     <ContextMenu.Item className="menu-item" onSelect={() => void openPaths([node.path])}>
                       open
                     </ContextMenu.Item>
+                    {/* Plain Web: a copy in, beside it; this note out, onto the device. */}
+                    {inWeb && (
+                      <>
+                        <ContextMenu.Item
+                          className="menu-item"
+                          onSelect={() => pickAndImport(dirname(node.path))}
+                        >
+                          import…
+                        </ContextMenu.Item>
+                        <ContextMenu.Item
+                          className="menu-item"
+                          onSelect={() => void shareNote(node.path)}
+                        >
+                          share…
+                        </ContextMenu.Item>
+                        <ContextMenu.Item
+                          className="menu-item"
+                          onSelect={() => void downloadNote(node.path)}
+                        >
+                          download
+                        </ContextMenu.Item>
+                      </>
+                    )}
                     <ContextMenu.Item
                       className="menu-item"
                       onSelect={() => useStore.getState().setTreeRenaming(node.path)}
                     >
                       rename
                     </ContextMenu.Item>
-                    <ContextMenu.Item
-                      className="menu-item"
-                      onSelect={() => void revealInExplorer(node.path)}
-                    >
-                      reveal in explorer
-                    </ContextMenu.Item>
+                    {!inWeb && (
+                      <ContextMenu.Item
+                        className="menu-item"
+                        onSelect={() => void revealInExplorer(node.path)}
+                      >
+                        reveal in explorer
+                      </ContextMenu.Item>
+                    )}
                     <ContextMenu.Item className="menu-item" onSelect={() => askDelete(node)}>
                       delete
                     </ContextMenu.Item>

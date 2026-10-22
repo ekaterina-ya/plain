@@ -22,6 +22,8 @@ export interface SessionFile {
   rail: { collapsed: boolean; view: RailView; width: number };
   /** Editor's share of the width in split view (spec §2a). */
   split: number;
+  /** Rich or markdown on the editor side of split. */
+  splitRich: boolean;
   library: string | null;
   /** Relative paths of the folded folders in the tree (spec §6). */
   collapsed: string[];
@@ -82,6 +84,7 @@ export function toSession(): SessionFile {
       width: state.railWidth,
     },
     split: state.splitRatio,
+    splitRich: state.splitRich,
     library: state.libraryPath,
     collapsed: state.collapsed,
     librarySort: state.librarySort,
@@ -134,6 +137,8 @@ export function normalizeSession(raw: unknown): SessionFile | null {
       typeof value.split === "number" && value.split >= 0.15 && value.split <= 0.85
         ? value.split
         : 0.5,
+    // Sessions from before the choice existed open split in rich.
+    splitRich: value.splitRich !== false,
     library: typeof value.library === "string" ? value.library : null,
     collapsed: Array.isArray(value.collapsed)
       ? value.collapsed.filter((rel) => typeof rel === "string")
@@ -218,6 +223,7 @@ export function installSession(): () => void {
       state.railCollapsed === previous.railCollapsed &&
       state.railView === previous.railView &&
       state.railWidth === previous.railWidth &&
+      state.splitRich === previous.splitRich &&
       state.libraryPath === previous.libraryPath &&
       state.collapsed === previous.collapsed &&
       state.librarySort === previous.librarySort &&

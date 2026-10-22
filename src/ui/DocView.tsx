@@ -4,6 +4,7 @@ import { useStore, type Doc } from "../app/store";
 import { ReadView } from "../read/ReadView";
 import { EditView } from "../editor/EditView";
 import { FormatBar } from "./FormatBar";
+import { PHONE, useMedia } from "./media";
 import { ColumnEdge } from "./Resizer";
 import "./resizer.css";
 import "./split.css";
@@ -16,7 +17,9 @@ import "./split.css";
 export function DocView({ doc }: { doc: Doc }) {
   // Split has two panels of its own and a handle between them; the column
   // edges belong to the one-column modes (spec §3).
-  if (doc.mode === "split") return <SplitView doc={doc} />;
+  // Plain Web: two columns do not fit a phone; it reads the other half as rich.
+  const phone = useMedia(PHONE);
+  if (doc.mode === "split" && !phone) return <SplitView doc={doc} />;
   return (
     <>
       {/* Above the editor, under the mode bar and any banner (spec §5.2). */}
@@ -25,7 +28,7 @@ export function DocView({ doc }: { doc: Doc }) {
         {doc.mode === "read" ? (
           <ReadView doc={doc} />
         ) : (
-          <EditView doc={doc} rich={doc.mode === "rich"} />
+          <EditView doc={doc} rich={doc.mode === "rich" || doc.mode === "split"} />
         )}
         <ColumnEdge side="left" />
         <ColumnEdge side="right" />
@@ -66,6 +69,7 @@ function SplitView({ doc }: { doc: Doc }) {
   // the group with a new default would fight whoever is dragging it.
   const start = useRef(useStore.getState().splitRatio);
   const setSplitRatio = useStore((s) => s.setSplitRatio);
+  const rich = useStore((s) => s.splitRich);
   const preview = usePreview(doc);
 
   const onLayoutChanged = useCallback(
@@ -89,8 +93,8 @@ function SplitView({ doc }: { doc: Doc }) {
       onLayoutChanged={onLayoutChanged}
     >
       <Panel id={EDITOR_PANEL} className="split-panel" minSize="20%">
-        <FormatBar />
-        <EditView doc={doc} split />
+        <FormatBar split />
+        <EditView doc={doc} rich={rich} split />
       </Panel>
       <Separator className="split-handle" />
       <Panel id={READER_PANEL} className="split-panel" minSize="20%">

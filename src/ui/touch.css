@@ -1,0 +1,144 @@
+/* Plain Web on a phone and a tablet (ТЗ-Plain-Web §5.2–5.4). Every rule here
+   hangs off a data- attribute App sets in the web build only (ui/media.ts). */
+
+/* ---------------------------------------------------------- safe areas */
+.app[data-touch] {
+  padding-left: env(safe-area-inset-left);
+  padding-right: env(safe-area-inset-right);
+}
+
+/* ------------------------------------------------------------- drawer */
+.app[data-drawer] .rail {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: min(85vw, 320px);
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+  /* Under dialogs (20) and quick search (40): a delete asked for from the
+     drawer is answered on top of it. */
+  z-index: 19;
+  background: var(--bg);
+  box-shadow: 0 0 24px rgb(0 0 0 / 0.18);
+}
+
+.drawer-scrim {
+  position: fixed;
+  inset: 0;
+  z-index: 18;
+  background: rgb(0 0 0 / 0.25);
+}
+
+/* --------------------------------------------- phone: modes at the bottom */
+.app[data-phone] .modes {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 16;
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 4px 0 env(safe-area-inset-bottom);
+  background: var(--bg);
+  border-top: 1px solid var(--border);
+}
+
+.app[data-phone] .mode {
+  min-height: 44px;
+  padding: 0 20px;
+}
+
+.app[data-phone] .mode-split {
+  display: none;
+}
+
+.app[data-phone] .main {
+  padding-bottom: calc(52px + env(safe-area-inset-bottom));
+}
+
+/* The status line keeps what it says, not the counters around it. */
+.app[data-phone] .status-right {
+  display: none;
+}
+
+/* ------------------------------------------------------- touch targets */
+/* The bar grows with its triggers, so its line stays under them. */
+.app[data-touch] {
+  --menubar-h: 44px;
+}
+
+.app[data-touch] .mb-trigger {
+  min-height: 44px;
+  padding: 0 12px;
+}
+
+.app[data-touch] .mb-item,
+.app[data-touch] .menu-item {
+  min-height: 40px;
+}
+
+/* Chords say nothing to a finger; help → shortcuts still lists them for a
+   keyboard on an iPad. */
+.app[data-touch] .rail-hint,
+.app[data-touch] .mb-chord,
+.app[data-touch] .qs-chord,
+.app[data-touch] .qs-footer,
+.app[data-touch] .folder-search-foot {
+  display: none;
+}
+
+.app[data-touch] .tree-row {
+  min-height: 36px;
+}
+
+/* Not the name being edited in place (a div): its caret must still move. */
+.app[data-touch] button.tree-row {
+  /* The long press is the tree's menu, not a text selection; Safari still
+     wants the prefix. */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Hiding and bringing back the pinned rail, for a finger (iPad landscape). */
+.app[data-touch] .rail-collapse,
+.app[data-touch] .rail-peek {
+  min-width: 44px;
+  min-height: 40px;
+}
+
+.app[data-touch] .fb {
+  height: 40px;
+  min-width: 40px;
+}
+
+/* What a mouse finds by hovering is simply there. */
+@media (hover: none) {
+  .app[data-touch] .rail-close {
+    display: block;
+  }
+
+  .app[data-touch] .code-copy {
+    opacity: 1;
+  }
+}
+
+/* --------------------------------------- the format bar on the keyboard */
+/* Not split's: its bar belongs to its own half. */
+.kb-open .app[data-touch] .main > .formatbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--kb, 0px);
+  z-index: 17;
+  height: 44px;
+  border-top: 1px solid var(--border);
+  border-bottom: none;
+}
+
+/* Behind the keyboard anyway; out of the way of the bar. */
+.kb-open .app[data-phone] .modes {
+  display: none;
+}

@@ -11,7 +11,7 @@ import { emitRerender } from "../read/events";
 import { render } from "../read/pipeline";
 import { countWords } from "../read/words";
 import { serialize } from "./eol";
-import { inTauri } from "./env";
+import { inTauri, inWeb } from "./env";
 import { docFields, fsError, hashFile, readFile, writeTextAtomic } from "./fs";
 import { newFile } from "../library/ops";
 import { copyText, isMac } from "./platform";
@@ -194,6 +194,8 @@ export async function drainPendingPaths(): Promise<void> {
 }
 
 export async function openFile(): Promise<void> {
+  // Plain Web: one library, always open; Ctrl+O is quick open (ТЗ-Plain-Web §4).
+  if (inWeb) return openQuickSearch();
   if (!inTauri) return;
   const extensions = useStore
     .getState()
@@ -207,6 +209,7 @@ export async function openFile(): Promise<void> {
 }
 
 export async function openLibrary(): Promise<void> {
+  if (inWeb) return openLibraryPath("/library");
   if (!inTauri) return;
   // recursive: the fs scope has to reach files in sub-folders, not just the root.
   const picked = await open({ directory: true, multiple: false, recursive: true });
@@ -385,17 +388,24 @@ export async function showAbout(): Promise<void> {
     await showAbout();
   };
 
-  const registered = await isRegistered();
+  const registered = inWeb ? false : await isRegistered();
+  // Plain Web: which app opens .md is the desktop's business.
+  const association = inWeb
+    ? []
+    : [
+        { label: "default apps", run: () => void go("ms-settings:defaultapps") },
+        { label: registered ? "unregister" : "register", run: () => void toggle(registered) },
+      ];
   store.setDialog({
     title: `plain ${await appVersion()}`,
     lines: [
       "a markdown reader and editor that leaves your files alone.",
-      registered ? "registered for .md · .markdown" : "not registered for .md",
+      ...(inWeb ? [] : [registered ? "registered for .md · .markdown" : "not registered for .md"]),
     ],
     actions: [
-      { label: "default apps", run: () => void go("ms-settings:defaultapps") },
+      ...association.slice(0, 1),
       { label: "github", run: () => void go("https://github.com/gregmos/plain") },
-      { label: registered ? "unregister" : "register", run: () => void toggle(registered) },
+      ...association.slice(1),
       { label: "close", run: () => store.setDialog(null) },
     ],
     cancel: () => store.setDialog(null),
@@ -415,6 +425,8 @@ export async function exitApp(): Promise<void> {
  * open in it: a second window on one folder is what this is for (W13 §1.2).
  */
 export async function openNewWindow(): Promise<void> {
+  // Plain Web: a browser's window is a tab, on the same library.
+  if (inWeb) return void window.open(location.origin, "_blank", "noopener");
   await newWindow({ ...toSession(), files: [], active: null });
 }
 
@@ -590,6 +602,11 @@ export async function copyPlainText(): Promise<void> {
 /** `file → export as text…`: the same text, written as a `.txt`. */
 export async function exportPlainText(): Promise<void> {
   if (!inTauri) return;
+  if (inWeb) {
+    flushActiveEditor();
+    const id = useStore.getState().activeId;
+    return id ? webExport(id, "text") : undefined;
+  }
   const store = useStore.getState();
   flushActiveEditor();
   const doc = activeDoc(useStore.getState());
@@ -699,6 +716,8 @@ export async function exportHtmlFile(): Promise<void> {
     before.setMessage("export needs the app");
     return;
   }
+  // Plain Web: the file goes to this device (ТЗ-Plain-Web §4).
+  if (inWeb) return webExport(opening.id, "html");
 
   const [{ save }, { exportHtml }, { dirname }] = await Promise.all([
     import("@tauri-apps/plugin-dialog"),
@@ -736,5 +755,21 @@ export async function exportHtmlFile(): Promise<void> {
   } catch (error) {
     const why = error instanceof Error ? error.message : String(error);
     useStore.getState().setMessage(`couldn't export — ${why}`);
+  }
+}
+
+/** Plain Web: `export → html…/text…` as a download, made as share makes it. */
+async function webExport(id: string, kind: "html" | "text"): Promise<void> {
+  const store = useStore.getState();
+  const doc = store.docs.find((d) => d.id === id);
+  if (!doc?.path) return;
+  const [{ prepare }, { toDevice }] = await Promise.all([import("./share"), import("./import")]);
+  try {
+    const ready = await prepare(doc.path);
+    const file = kind === "html" ? ready.html : ready.text;
+    toDevice(file.name, file, `${file.type};charset=utf-8`);
+    useStore.getState().setMessage(`exported ${file.name}`);
+  } catch (error) {
+    useStore.getState().setMessage(`couldn't export — ${fsError(error).message}`);
   }
 }

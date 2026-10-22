@@ -1,0 +1,41 @@
+# Syncthing for Plain Web (ТЗ-Plain-Web §5.10): /srv/notes kept in step with
+# the Mac's notes folder. /etc/systemd/system/plain-syncthing.service.
+# The same user as plain-web, so synced files are its own; the panel only on
+# this machine. Exit codes 3 and 4 are Syncthing asking to be restarted.
+[Unit]
+Description=Syncthing for Plain Web
+After=network-online.target
+Wants=network-online.target
+StartLimitIntervalSec=0
+
+[Service]
+User=plain
+Group=plain
+Environment=STNODEFAULTFOLDER=1
+ExecStart=/usr/bin/syncthing serve --no-browser --no-restart --home=/var/lib/plain-syncthing --gui-address=127.0.0.1:8384
+# /var/lib/plain-syncthing: the device's keys and Syncthing's index.
+StateDirectory=plain-syncthing
+StateDirectoryMode=0700
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=3 4
+RestartForceExitStatus=3 4
+# Files Syncthing makes keep the Mac's modes (0644); /srv/notes is 0700.
+UMask=0077
+
+NoNewPrivileges=yes
+ProtectSystem=strict
+ReadWritePaths=/srv/notes
+ProtectHome=yes
+PrivateTmp=yes
+PrivateDevices=yes
+ProtectKernelTunables=yes
+ProtectKernelModules=yes
+ProtectControlGroups=yes
+RestrictNamespaces=yes
+RestrictSUIDSGID=yes
+LockPersonality=yes
+CapabilityBoundingSet=
+
+[Install]
+WantedBy=multi-user.target

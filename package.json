@@ -8,6 +8,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "dev:web": "vite --mode web",
+    "build:web": "tsc --noEmit -p tsconfig.web.json && vite build --mode web --outDir dist-web",
     "test": "vitest run",
     "tauri": "tauri",
     "pack": "powershell -ExecutionPolicy Bypass -File scripts/pack.ps1",

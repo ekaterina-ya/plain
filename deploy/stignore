@@ -1,0 +1,5 @@
+// Put as .stignore in the synced notes folder, on the server and on the Mac.
+// Plain's atomic writes leave a .tmp… file for a moment; macOS leaves .DS_Store.
+(?d).tmp*
+(?d).DS_Store
+(?d)*.swp

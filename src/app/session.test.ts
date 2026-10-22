@@ -14,7 +14,7 @@ import { makeDoc, useStore } from "./store";
 
 beforeEach(() => {
   clearBuffers();
-  useStore.setState({ docs: [], activeId: null, recent: [], libraryPath: null, collapsed: [] });
+  useStore.setState({ docs: [], activeId: null, recent: [], libraryPath: null, collapsed: [], splitRich: true });
 });
 
 describe("state.json", () => {
@@ -168,6 +168,7 @@ describe("normalizeSession", () => {
       active: "C:/notes/a.md",
       rail: { collapsed: true, view: "outline", width: 260 },
       split: 0.62,
+      splitRich: false,
       library: "C:/notes",
       collapsed: ["archive", 7],
       librarySort: "name",
@@ -189,6 +190,7 @@ describe("normalizeSession", () => {
       active: "C:/notes/a.md",
       rail: { collapsed: true, view: "outline", width: 260 },
       split: 0.62,
+      splitRich: false,
       library: "C:/notes",
       collapsed: ["archive"],
       librarySort: "name",
@@ -208,6 +210,7 @@ describe("normalizeSession", () => {
       active: null,
       rail: { collapsed: false, view: "files", width: 232 },
       split: 0.5,
+      splitRich: true,
       library: null,
       collapsed: [],
       librarySort: "modified",
@@ -223,6 +226,7 @@ describe("normalizeSession", () => {
         active: 7,
         rail: 5,
         split: "wide",
+        splitRich: "no",
         library: false,
         collapsed: "archive",
         librarySort: "size",

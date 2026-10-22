@@ -13,7 +13,7 @@
   --surface-2: #e6e3dc;
   --quote: #5c5a54;
   --accent: #7c3aed;
-  --selection: rgba(124, 58, 237, 0.18);
+  --selection: rgba(250, 204, 21, 0.4);
   --modal-bg: #fbfaf8;
   --modal-border: #e6e3dc;
   /* Floating format panel (mockup 1d): dark on light, inverted in dark. */
@@ -62,7 +62,7 @@
     --surface-2: #262523;
     --quote: #a9a69f;
     --accent: #a78bfa;
-    --selection: rgba(167, 139, 250, 0.28);
+    --selection: rgba(250, 204, 21, 0.28);
     --modal-bg: #1c1b19;
     --modal-border: #2e2d2a;
     --toolbar-bg: #e8e6e1;
@@ -84,7 +84,7 @@
   --surface-2: #262523;
   --quote: #a9a69f;
   --accent: #a78bfa;
-  --selection: rgba(167, 139, 250, 0.28);
+  --selection: rgba(250, 204, 21, 0.28);
   --modal-bg: #1c1b19;
   --modal-border: #2e2d2a;
   --toolbar-bg: #e8e6e1;

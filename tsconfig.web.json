@@ -1,0 +1,37 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "paths": {
+      "@tauri-apps/api/core": [
+        "./src/web/core.ts"
+      ],
+      "@tauri-apps/api/event": [
+        "./src/web/event.ts"
+      ],
+      "@tauri-apps/api/window": [
+        "./src/web/window.ts"
+      ],
+      "@tauri-apps/api/webview": [
+        "./src/web/webview.ts"
+      ],
+      "@tauri-apps/api/path": [
+        "./src/web/path.ts"
+      ],
+      "@tauri-apps/api/app": [
+        "./src/web/app.ts"
+      ],
+      "@tauri-apps/plugin-fs": [
+        "./src/web/fs.ts"
+      ],
+      "@tauri-apps/plugin-dialog": [
+        "./src/web/dialog.ts"
+      ],
+      "@tauri-apps/plugin-opener": [
+        "./src/web/opener.ts"
+      ],
+      "@tauri-apps/plugin-clipboard-manager": [
+        "./src/web/clipboard.ts"
+      ]
+    }
+  }
+}

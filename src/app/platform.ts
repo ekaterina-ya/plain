@@ -2,7 +2,7 @@
 // capabilities that differ between WebView2 and WKWebView (spec §13a).
 // Everything else asks here rather than sniffing on its own.
 
-import { inTauri } from "./env";
+import { inTauri, inWeb } from "./env";
 
 let forced: boolean | null = null;
 
@@ -31,8 +31,19 @@ export function isMac(): boolean {
  * `isMac()` — which also means the test pin controls both (vitest.setup.ts).
  */
 export function isWindows(): boolean {
-  return !isMac();
+  // Plain Web's files live on a POSIX server, whatever the browser runs on.
+  return !isMac() && import.meta.env.MODE !== "web";
 }
+
+/**
+ * Plain Web on a touch screen with nothing finer to point with — a phone, a
+ * tablet. Read once: it decides whether the app's own long-press menus stand
+ * aside for the system's text selection, and that must not change under a
+ * mounted view. Never on the desktop app, a touch laptop included.
+ */
+let touch: boolean | undefined;
+export const isTouch = (): boolean =>
+  (touch ??= inWeb && typeof matchMedia === "function" && matchMedia("(pointer: coarse)").matches);
 
 /**
  * What the primary modifier is called here. Chords are written with `Ctrl`

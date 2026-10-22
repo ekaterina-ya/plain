@@ -1,0 +1,41 @@
+# Plain Web for the server (ТЗ-Plain-Web §8): a `web-*` tag builds one
+# archive for Linux x64 — the server binary, the built front end and deploy/ —
+# and publishes it as a release; deploy/update.sh on the server takes it from
+# there. The tests are run before tagging (CLAUDE.md), so this only builds.
+#
+# ubuntu-24.04 on purpose: the server is Ubuntu 24.04, and the binary links
+# against the glibc it was built with. macos.yml answers to `v*` tags only.
+name: Plain Web release
+
+on:
+  push:
+    tags: ["web-*"]
+
+jobs:
+  release:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: rustup toolchain install stable --profile minimal && rustup default stable
+      - run: npm ci && npm run build:web
+      - run: cargo build --release --locked --manifest-path server/Cargo.toml
+      - name: Pack
+        run: |
+          name="plain-web-$TAG-linux-x64"
+          mkdir -p "pack/$name"
+          cp server/target/release/plain-web "pack/$name/"
+          cp -r dist-web "pack/$name/web"
+          cp -r deploy "pack/$name/deploy"
+          tar czf "$name.tar.gz" --owner=0 --group=0 -C pack "$name"
+          sha256sum "$name.tar.gz" > "$name.tar.gz.sha256"
+      # `web-*-dr`: the owner's own build (branch delay-rag), never "Latest".
+      - run: gh release create "$TAG" plain-web-"$TAG"-linux-x64.tar.gz* --title "$TAG" --notes "Plain Web $TAG (Linux x64)." $([[ "$TAG" == *-dr ]] && echo --prerelease)

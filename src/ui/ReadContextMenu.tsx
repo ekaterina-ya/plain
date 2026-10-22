@@ -9,7 +9,7 @@
 import { useState, type ReactNode } from "react";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import { copyPlainText } from "../app/commands";
-import { copyText } from "../app/platform";
+import { copyText, isTouch } from "../app/platform";
 import { useStore } from "../app/store";
 import "./library.css";
 
@@ -23,7 +23,12 @@ async function toClipboard(text: string, said: string): Promise<void> {
   }
 }
 
-export function ReadContextMenu({
+/** On a touch screen the long press is the system's text selection. */
+export function ReadContextMenu(props: Parameters<typeof ReadMenu>[0]) {
+  return isTouch() ? <>{props.children}</> : <ReadMenu {...props} />;
+}
+
+function ReadMenu({
   children,
   onOpenLink,
   onOpenImage,

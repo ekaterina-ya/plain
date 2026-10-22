@@ -1,0 +1,8 @@
+# Into the Caddyfile (/etc/caddy/Caddyfile for Caddy from apt), with your
+# name. Caddy issues the certificate, passes the WebSocket and the Host on as
+# they are, and sets X-Forwarded-For. Caddy in Docker: the bridge's gateway
+# instead of 127.0.0.1, as in plain-web.service.
+notes.example.com {
+    encode gzip zstd
+    reverse_proxy 127.0.0.1:8642
+}

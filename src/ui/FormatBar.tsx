@@ -61,8 +61,10 @@ function useActive(): ReadonlySet<Format> {
 }
 
 /** 30px above the editor in edit, rich and split; off with `edit.toolbar`. */
-export function FormatBar() {
+export function FormatBar({ split = false }: { split?: boolean }) {
   const on = useStore((s) => s.settings.edit.toolbar);
+  const rich = useStore((s) => s.splitRich);
+  const setRich = useStore((s) => s.setSplitRich);
   const active = useActive();
   if (!on) return null;
 
@@ -85,6 +87,22 @@ export function FormatBar() {
           {button.label}
         </button>
       ))}
+      {/* Which editor split shows; the palette has it too (`split: rich / md`). */}
+      {split && (
+        <span className="fb-split">
+          {(["rich", "md"] as const).map((kind) => (
+            <button
+              key={kind}
+              className={"fb" + (rich === (kind === "rich") ? " is-active" : "")}
+              title={kind === "rich" ? "split: rich" : "split: markdown"}
+              onMouseDown={(event) => event.preventDefault()}
+              onClick={() => setRich(kind === "rich")}
+            >
+              {kind}
+            </button>
+          ))}
+        </span>
+      )}
     </div>
   );
 }

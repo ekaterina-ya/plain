@@ -1,9 +1,14 @@
+import { openQuickSearch } from "../app/commands";
 import { crumbParts } from "../app/paths";
 import { activeDoc, useStore, type Mode } from "../app/store";
 
 const MODES: Mode[] = ["read", "edit", "rich"];
 
-export function ModeBar() {
+/**
+ * `onFiles`: Plain Web's drawer, opened from here instead of the rail.
+ * `onShare`: on a touch screen, sharing the note is a button, not a menu deep.
+ */
+export function ModeBar({ onFiles, onShare }: { onFiles?: () => void; onShare?: () => void } = {}) {
   const railCollapsed = useStore((s) => s.railCollapsed);
   const toggleRail = useStore((s) => s.toggleRail);
   const libraryPath = useStore((s) => s.libraryPath);
@@ -20,9 +25,25 @@ export function ModeBar() {
   return (
     <div className="modebar">
       <div className="modebar-left">
-        {railCollapsed && (
-          <button className="rail-peek" onClick={toggleRail}>
-            ▸ files
+        {onFiles ? (
+          <>
+            <button className="rail-peek" onClick={onFiles}>
+              ▸ files
+            </button>
+            <button className="rail-peek" title="search" onClick={() => openQuickSearch()}>
+              ⌕
+            </button>
+          </>
+        ) : (
+          railCollapsed && (
+            <button className="rail-peek" onClick={toggleRail}>
+              ▸ files
+            </button>
+          )
+        )}
+        {onShare && (
+          <button className="rail-peek" onClick={onShare}>
+            share
           </button>
         )}
         {crumbs && (

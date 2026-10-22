@@ -4,13 +4,18 @@
 import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { openLibraryPath, openPaths } from "../app/commands";
 import { dropImagesInEditor } from "../editor";
-import { inTauri } from "../app/env";
+import { inTauri, inWeb } from "../app/env";
+import { droppedFiles, importFiles } from "../app/import";
 import { useStore } from "../app/store";
 import { pathKind } from "./tree";
 
 async function accept(paths: string[]): Promise<void> {
+  // Plain Web: what was dropped, taken before anything waits (app/import.ts).
+  const dropped = inWeb ? droppedFiles(paths) : [];
   // Images dropped while editing go into the document, not into a tab (§2a).
   if (await dropImagesInEditor(paths)) return;
+  // Plain Web: from the device, so into the library as a copy.
+  if (inWeb) return importFiles(dropped);
   const files: string[] = [];
   let folder: string | null = null;
   for (const path of paths) {

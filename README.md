@@ -1,5 +1,7 @@
 # Plain
 
+> **This fork adds Plain Web** — the same library in a browser on a computer, iPhone and iPad, on your own server. See [WEB.md](WEB.md).
+
 A lightweight Markdown reader and editor for Windows 11 and macOS.
 
 Double-click a `.md` file and you are reading. Make a change, and the file stays yours, byte for byte. Your library is a plain folder on disk: no database, no account, no network.

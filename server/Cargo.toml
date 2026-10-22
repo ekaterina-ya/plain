@@ -1,0 +1,47 @@
+[package]
+name = "plain-web"
+version = "0.1.0"
+description = "Plain on your own server"
+license = "MIT"
+edition = "2021"
+# File::try_lock (auth.rs `lock`).
+rust-version = "1.89"
+publish = false
+
+[dependencies]
+# Under the name the src-tauri modules import it by.
+tauri = { path = "tauri-shim", package = "tauri-shim" }
+axum = { version = "0.8", features = ["ws"] }
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "sync", "time"] }
+tower-http = { version = "0.6", features = ["fs", "set-header"] }
+mime_guess = "2"
+# The library watcher (events.rs), as src-tauri's watch.rs has it.
+notify = "8.2.0"
+notify-debouncer-full = "0.7.0"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+# Signing in (auth.rs): the password, the authenticator's codes, init's QR.
+argon2 = "0.5"
+# OsRng for the salt, the secret and the session tokens.
+rand_core = { version = "0.6", features = ["getrandom"] }
+totp-rs = { version = "5", default-features = false }
+qrcode = { version = "0.14", default-features = false }
+rpassword = "7"
+# What the shared modules need — same versions as src-tauri/Cargo.toml.
+tempfile = "3.27.0"
+trash = "5.2.7"
+encoding_rs = "0.8.35"
+chardetng = "1.0.0"
+blake3 = "1.8.7"
+ignore = "0.4.23"
+regex = "1.11.1"
+rayon = "1.11.0"
+
+[target.'cfg(unix)'.dependencies]
+xattr = "1"
+
+[dev-dependencies]
+tower = { version = "0.5", features = ["util"] }
+# A real socket, to see it closed when its device signs out.
+tokio-tungstenite = "0.26"
+futures-util = "0.3"

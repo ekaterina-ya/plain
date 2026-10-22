@@ -6,7 +6,8 @@
 import { tinykeys } from "tinykeys";
 import { chordToPattern, matchesChord } from "./chords";
 import { isMac } from "./platform";
-import { commands } from "./registry";
+import { inWeb } from "./env";
+import { commands, DESKTOP_ONLY } from "./registry";
 import { useStore } from "./store";
 
 /**
@@ -42,6 +43,8 @@ function swallowed(): string[] {
 export function bindings(): Record<string, () => void> {
   const map: Record<string, () => void> = {};
   for (const command of commands) {
+    // Plain Web: the browser keeps its own chords where the app has nothing.
+    if (inWeb && DESKTOP_ONLY.has(command.id)) continue;
     for (const chord of [command.chord, ...(command.chords ?? [])]) {
       if (chord) map[chord] = () => void command.run();
     }

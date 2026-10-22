@@ -49,3 +49,14 @@
 .fb-strike {
   text-decoration: line-through;
 }
+
+/* Split's rich · md, held at the right edge even when the bar scrolls. */
+.fb-split {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+  padding-left: 2px;
+  position: sticky;
+  right: 0;
+  background: var(--bg);
+}

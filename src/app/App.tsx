@@ -19,7 +19,7 @@ import { installCloseGuard } from "./close";
 import { installDrafts } from "./drafts";
 import { DiffScreen } from "../ui/Diff";
 import { HistoryScreen } from "../ui/History";
-import { inTauri } from "./env";
+import { inTauri, inWeb } from "./env";
 import { installKeys } from "./keys";
 import { installDrop } from "../library/dnd";
 import { installTree } from "../library/tree";
@@ -33,6 +33,8 @@ import { activeDoc, useStore, type Comparison, type Screen } from "./store";
 import { watchSystemTheme } from "./theme";
 import { installWatcher } from "./watcher";
 import { installActivateDoc, installDocRegistry, installRecentSync } from "./windows";
+import { DRAWER, installKeyboard, installSwipe, PHONE, TOUCH, useDrawer, useMedia } from "../ui/media";
+import { shareNote } from "./share";
 
 
 /**
@@ -125,6 +127,14 @@ export function App() {
     return () => window.removeEventListener("resize", fit);
   }, []);
 
+  // Plain Web on a phone or a tablet (ui/media.ts); false on the desktop.
+  const phone = useMedia(PHONE);
+  const drawer = useMedia(DRAWER);
+  const touch = useMedia(TOUCH);
+  const [drawerOpen, setDrawerOpen] = useDrawer(doc?.id ?? null);
+  useEffect(() => installKeyboard(), []);
+  useEffect(() => installSwipe(), []);
+
   useEffect(() => installKeys(), []);
   useEffect(() => installDrafts(), []);
   useEffect(() => installSession(), []);
@@ -174,17 +184,30 @@ export function App() {
       // The dragged rail width lives here, so the rail and the strip that
       // resizes it read the same number (spec §4).
       style={{ "--rail-w": `${railWidth}px` } as CSSProperties}
+      data-phone={phone || undefined}
+      data-drawer={drawer || undefined}
+      data-touch={touch || undefined}
     >
       <MenuBar />
       <div className="app-body">
-        {!railCollapsed && (
-          <>
-            <Rail />
-            <RailResizer />
-          </>
-        )}
+        {drawer
+          ? drawerOpen && (
+              <>
+                <div className="drawer-scrim" onClick={() => setDrawerOpen(false)} />
+                <Rail />
+              </>
+            )
+          : !railCollapsed && (
+              <>
+                <Rail />
+                <RailResizer />
+              </>
+            )}
         <div className="main">
-          <ModeBar />
+          <ModeBar
+            onFiles={drawer ? () => setDrawerOpen(true) : undefined}
+            onShare={inWeb && touch && doc?.path ? () => void shareNote(doc.path as string) : undefined}
+          />
           {banners.map((one) => (
             <Banner banner={one} key={one.id} />
           ))}

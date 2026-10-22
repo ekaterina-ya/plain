@@ -12,6 +12,7 @@ import { useState, type ReactNode } from "react";
 import * as ContextMenu from "@radix-ui/react-context-menu";
 import { selectAll } from "@codemirror/commands";
 import type { EditorView } from "@codemirror/view";
+import { isTouch } from "../app/platform";
 import { copySelection, cutSelection, pasteInto } from "../editor/clipboard";
 import "./library.css";
 
@@ -20,7 +21,12 @@ interface Aim {
   readOnly: boolean;
 }
 
-export function EditorContextMenu({
+/** On a touch screen the long press is the system's text selection. */
+export function EditorContextMenu(props: Parameters<typeof EditorMenu>[0]) {
+  return isTouch() ? <>{props.children}</> : <EditorMenu {...props} />;
+}
+
+function EditorMenu({
   children,
   view,
 }: {

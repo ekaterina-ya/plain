@@ -1,6 +1,9 @@
 node_modules/
 dist/
 dist-win/
+dist-web/
+server/target/
+data-dev/
 src-tauri/target/
 src-tauri/gen/schemas/
 *.log

@@ -294,6 +294,8 @@ interface AppState {
   railWidth: number;
   /** Editor's share of the width in split; the session keeps it (§2a). */
   splitRatio: number;
+  /** Split's editor: rich, or the markdown as it is (§2a). */
+  splitRich: boolean;
   libraryPath: string | null;
   recent: string[];
   /** Transient status-bar message; clears itself after 3 s. */
@@ -385,6 +387,7 @@ interface AppState {
   setMode: (mode: Mode) => void;
   /** Share of the width the editor takes in split (spec §2a). */
   setSplitRatio: (ratio: number) => void;
+  setSplitRich: (rich: boolean) => void;
   toggleMode: () => void;
   setMessage: (message: string | null) => void;
   setNote: (note: string | null) => void;
@@ -442,6 +445,7 @@ export const useStore = create<AppState>()((set, get) => ({
   railView: "files",
   railWidth: RAIL_WIDTH.default,
   splitRatio: 0.5,
+  splitRich: true,
   libraryPath: null,
   recent: [],
   message: null,
@@ -593,6 +597,7 @@ export const useStore = create<AppState>()((set, get) => ({
   },
 
   setSplitRatio: (splitRatio) => set({ splitRatio }),
+  setSplitRich: (splitRich) => set({ splitRich }),
 
   // Picking a mode in the mode bar asks for the document, so it closes the
   // screen over it — even when there is no document to show yet (spec §4).

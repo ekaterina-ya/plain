@@ -4,6 +4,7 @@
 
 import type { Extension } from "@codemirror/state";
 import { EditorView, ViewPlugin, type ViewUpdate } from "@codemirror/view";
+import { isTouch } from "../app/platform";
 import {
   insertLink,
   toggleBold,
@@ -75,6 +76,8 @@ class FormatToolbar {
   // CodeMirror settles the selection in its own mouseup handler, so the panel
   // is placed one task later, when the selection is the final one.
   private onMouseUp = (): void => {
+    // On a touch screen the space above a selection is the system's menu.
+    if (isTouch()) return;
     if (this.suppress) {
       this.suppress = false;
       return;

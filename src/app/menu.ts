@@ -7,8 +7,9 @@
 
 import { openLibraryPath, openPaths } from "./commands";
 import { chordText } from "./chords";
+import { inWeb } from "./env";
 import { basename } from "./paths";
-import { command } from "./registry";
+import { command, DESKTOP_ONLY } from "./registry";
 import { reopenAs } from "./save";
 import type { Theme } from "./settings";
 import { useStore } from "./store";
@@ -141,7 +142,26 @@ function themeItem(name: Theme, id: string): MenuEntry {
  * The whole bar, rebuilt on every render — it is a few dozen objects, and
  * this way `disabled` and the ticks are never stale.
  */
+/** Plain Web: the desktop-only entries out, and no separator left dangling. */
+function webItems(items: MenuNode[]): MenuNode[] {
+  const kept = items
+    .filter((item) => !(item.kind === "item" && DESKTOP_ONLY.has(item.key)))
+    .map((item) => (item.kind === "submenu" ? { ...item, items: webItems(item.items) } : item));
+  const out: MenuNode[] = [];
+  for (const item of kept) {
+    if (item.kind === "separator" && (out.length === 0 || out[out.length - 1]?.kind === "separator")) continue;
+    out.push(item);
+  }
+  while (out[out.length - 1]?.kind === "separator") out.pop();
+  return out;
+}
+
 export function menuModel(): MenuSection[] {
+  const sections = desktopModel();
+  return inWeb ? sections.map((section) => ({ ...section, items: webItems(section.items) })) : sections;
+}
+
+function desktopModel(): MenuSection[] {
   separators = 0;
   const state = useStore.getState();
 
@@ -151,6 +171,7 @@ export function menuModel(): MenuSection[] {
       label: "file",
       items: [
         entry("file.new"),
+        ...(inWeb ? [entry("file.import")] : []),
         entry("file.newWindow"),
         entry("file.open"),
         entry("file.openLibrary"),
@@ -170,9 +191,12 @@ export function menuModel(): MenuSection[] {
             entry("file.exportPdf", "pdf…"),
           ],
         },
+        ...(inWeb ? [entry("file.share"), entry("file.download")] : []),
         { kind: "submenu", key: "reopen", label: "reopen as", items: reopenItems() },
         separator(),
         entry("file.history"),
+        ...(inWeb ? [entry("file.restoreDeleted")] : []),
+        ...(inWeb ? [separator(), entry("file.devices"), entry("file.signOut")] : []),
         separator(),
         entry("file.close"),
         entry("file.closeWindow"),
@@ -190,6 +214,8 @@ export function menuModel(): MenuSection[] {
         separator(),
         entry("nav.find"),
         entry("nav.replace"),
+        // Plain Web: on a touch screen there are no chords to reach these by.
+        ...(inWeb ? [entry("nav.quickSearch"), entry("nav.searchInFolder"), entry("nav.palette")] : []),
         separator(),
         entry("edit.bold"),
         entry("edit.italic"),

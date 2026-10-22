@@ -54,6 +54,10 @@ import {
 } from "../editor/commands";
 import { insertImageFromFile } from "../editor/images";
 import { reopenAs, saveActive, saveAs } from "./save";
+import { openTrash } from "./trash";
+import { openDevices, signOut } from "./account";
+import { downloadNote, pickAndImport } from "./import";
+import { shareNote } from "./share";
 import { toggleLineNumbers } from "../editor/setup";
 import { goBack, goForward } from "../read/history";
 import {
@@ -62,6 +66,7 @@ import {
   emitGotoLinePrompt,
   emitReplace,
 } from "../read/events";
+import { inWeb } from "./env";
 import { isMac } from "./platform";
 import { activeDoc, useStore } from "./store";
 
@@ -97,6 +102,17 @@ const inEdit = () => {
   const mode = activeDoc(store())?.mode;
   return mode === "edit" || mode === "rich";
 };
+
+/**
+ * Plain Web: what only the desktop can do — its windows, the system's file
+ * dialogs, Finder. Not offered in a browser at all (plans/stage-6.md).
+ */
+export const DESKTOP_ONLY = new Set([
+  "file.closeWindow",
+  "file.exit",
+  "file.reveal",
+  "view.alwaysOnTop",
+]);
 
 export const commands: Command[] = [
   /* ------------------------------------------------------------- file */
@@ -137,6 +153,37 @@ export const commands: Command[] = [
     },
     when: hasDoc,
   },
+  // Plain Web: the server keeps deleted files, and this is the way back.
+  {
+    id: "file.restoreDeleted",
+    title: "restore from recycle bin…",
+    run: () => void openTrash(),
+    when: () => inWeb,
+  },
+  // Plain Web: a copy of a file from this device into the library.
+  { id: "file.import", title: "import…", run: () => pickAndImport(), when: () => inWeb },
+  // Plain Web: the note out to other apps (app/share.ts).
+  {
+    id: "file.share",
+    title: "share…",
+    run: () => {
+      const path = activeDoc(store())?.path;
+      if (path) void shareNote(path);
+    },
+    when: () => inWeb && hasFile(),
+  },
+  // Plain Web: the open note onto this device, as it is.
+  {
+    id: "file.download",
+    title: "download",
+    run: () => {
+      const path = activeDoc(store())?.path;
+      if (path) void downloadNote(path);
+    },
+    when: () => inWeb && hasFile(),
+  },
+  { id: "file.devices", title: "devices…", run: () => openDevices(), when: () => inWeb },
+  { id: "file.signOut", title: "sign out", run: () => void signOut(), when: () => inWeb },
   {
     id: "file.copyPlain",
     title: "copy as plain text",
@@ -222,6 +269,12 @@ export const commands: Command[] = [
     chord: "Ctrl+Shift+\\",
     run: () => store().setMode("split"),
     when: hasDoc,
+  },
+  {
+    id: "view.splitRich",
+    title: "split: rich / md",
+    run: () => store().setSplitRich(!store().splitRich),
+    when: () => activeDoc(store())?.mode === "split",
   },
   { id: "view.toggleRail", title: "toggle rail", chord: "Ctrl+\\", run: () => store().toggleRail() },
   {
@@ -366,6 +419,8 @@ export const commands: Command[] = [
     id: "app.settingsFile",
     title: "open settings.json",
     run: () => void openSettingsFile(),
+    // The server's file, shared by every device: the settings screen it is.
+    when: () => !inWeb,
   },
   {
     id: "app.shortcuts",
@@ -375,6 +430,13 @@ export const commands: Command[] = [
   },
   { id: "app.about", title: "about", run: () => void showAbout() },
 ];
+
+// Asked when used, not at load: the flag is the build's, and tests swap it.
+for (const desktop of commands.filter((command) => DESKTOP_ONLY.has(command.id))) {
+  const { when, run } = desktop;
+  desktop.when = () => !inWeb && (when ? when() : true);
+  desktop.run = () => (inWeb ? undefined : run());
+}
 
 /**
  * The chords macOS spells differently (spec §13a, review #5–#7). Everything
