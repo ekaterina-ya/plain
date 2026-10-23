@@ -102,6 +102,13 @@
   user-select: none;
 }
 
+/* The column's width is pulled with a mouse; on a touch screen it is
+   settings → contentWidth. The right one would stick out past the screen
+   and let the whole page pan. */
+.app[data-touch] .column-edge {
+  display: none;
+}
+
 /* Hiding and bringing back the pinned rail, for a finger (iPad landscape). */
 .app[data-touch] .rail-collapse,
 .app[data-touch] .rail-peek {

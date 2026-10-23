@@ -108,6 +108,7 @@ const inEdit = () => {
  * dialogs, Finder. Not offered in a browser at all (plans/stage-6.md).
  */
 export const DESKTOP_ONLY = new Set([
+  "file.newWindow",
   "file.closeWindow",
   "file.exit",
   "file.reveal",

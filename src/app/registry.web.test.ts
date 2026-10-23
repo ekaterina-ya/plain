@@ -13,7 +13,7 @@ it("offers the web's own commands and not reveal in explorer", () => {
   expect(ids).toEqual(expect.arrayContaining(["file.import", "file.devices", "file.signOut"]));
   expect(ids).toContain("file.saveAs");
   expect(ids).toEqual(expect.arrayContaining(["file.download", "file.share", "file.exportHtml", "file.exportText"]));
-  for (const desktop of ["file.reveal", "file.exit", "file.closeWindow", "view.alwaysOnTop"]) {
+  for (const desktop of ["file.reveal", "file.exit", "file.newWindow", "file.closeWindow", "view.alwaysOnTop"]) {
     expect(ids).not.toContain(desktop);
   }
 });
