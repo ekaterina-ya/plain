@@ -1,6 +1,12 @@
 # Plain
 
-> **This fork adds Plain Web** — the same library in a browser on a computer, iPhone and iPad, on your own server. See [WEB.md](WEB.md).
+> **Этот форк добавляет Plain Web** — ту же библиотеку заметок в браузере на компьютере, iPhone и iPad, на своём сервере.
+>
+> - Что нового и чем отличается от оригинала — [WEB.md](WEB.md)
+> - Как поднять на своём сервере, шаг за шагом — [deploy/README.md](deploy/README.md)
+> - Готовые сборки — [Releases](https://github.com/ekaterina-ya/plain/releases) (`web-*`)
+>
+> *This fork adds Plain Web, a self-hosted browser version of Plain for desktop and mobile. Docs are in Russian: [WEB.md](WEB.md), [deploy/README.md](deploy/README.md).*
 
 A lightweight Markdown reader and editor for Windows 11 and macOS.
 

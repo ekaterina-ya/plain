@@ -37,5 +37,5 @@ jobs:
           cp -r deploy "pack/$name/deploy"
           tar czf "$name.tar.gz" --owner=0 --group=0 -C pack "$name"
           sha256sum "$name.tar.gz" > "$name.tar.gz.sha256"
-      # `web-*-dr`: the owner's own build (branch delay-rag), never "Latest".
+      # `web-*-dr`: a personal build kept elsewhere, never "Latest".
       - run: gh release create "$TAG" plain-web-"$TAG"-linux-x64.tar.gz* --title "$TAG" --notes "Plain Web $TAG (Linux x64)." $([[ "$TAG" == *-dr ]] && echo --prerelease)

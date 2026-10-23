@@ -11,7 +11,7 @@
    install -d -o plain -g plain -m 700 /srv/notes /var/lib/plain-web
    install -d -m 755 /opt/plain-web
    ```
-3. **Программа.** Последний релиз `web-*` (без `-dr`) — на странице Releases. `update.sh` берётся из архива; дальше он обновляет сам себя вместе с остальным.
+3. **Программа.** Последний релиз `web-*` — на странице Releases. `update.sh` берётся из архива; дальше он обновляет сам себя вместе с остальным.
    ```bash
    cd /tmp && T=web-0.12 && N=plain-web-$T-linux-x64
    curl -fLO https://github.com/ekaterina-ya/plain/releases/download/$T/$N.tar.gz
